@@ -1,10 +1,10 @@
 import { LogLevel } from '@sentio/sdk'
 import { FuelNetwork } from '@sentio/sdk/fuel'
 
-import { CounterContractProcessor } from './types/fuel/CounterContractProcessor.js'
+import { BorrowerOperationsContractProcessor } from './types/fuel/BorrowerOperationsContractProcessor.js'
 
-CounterContractProcessor.bind({
-  address: '0xa14f85860d6ce99154ecbb13570ba5fba1d8dc16b290de13f036b016fd19a29c',
+BorrowerOperationsContractProcessor.bind({
+  address: '0xfFCDa9Bb2A36DF1D1B469A4e6c4799BDf44a7A5E7288FE89901C7bd8f08A2B19',//'fuel1llx6nwe2xm036x6xnf8xc3uehh6y57j7w2y0azvsr3aa3uy29vvstlyk37',
   chainId: FuelNetwork.TEST_NET
 })
   .onTransaction(
@@ -20,7 +20,7 @@ CounterContractProcessor.bind({
     },
     { includeFailed: true }
   )
-  .onLogFoo(async (log, ctx) => {
-    // you can also call ctx.contract.functions.complex(...)
-    ctx.meter.Counter('fooLogged').add(1, { baz: String(log.data.baz) })
-  })
+/* .onLogFoo(async (log, ctx) => {
+   // you can also call ctx.contract.functions.complex(...)
+   ctx.meter.Counter('fooLogged').add(1, { baz: String(log.data.baz) })
+ })*/
