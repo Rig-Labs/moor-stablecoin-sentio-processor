@@ -3,9 +3,11 @@ import { FuelNetwork } from '@sentio/sdk/fuel'
 
 import { BorrowerOperationsContractProcessor } from './types/fuel/BorrowerOperationsContractProcessor.js'
 
+
+
 BorrowerOperationsContractProcessor.bind({
-  address: '0xfFCDa9Bb2A36DF1D1B469A4e6c4799BDf44a7A5E7288FE89901C7bd8f08A2B19',//'fuel1llx6nwe2xm036x6xnf8xc3uehh6y57j7w2y0azvsr3aa3uy29vvstlyk37',
-  chainId: FuelNetwork.TEST_NET
+  address: '0x243F0cfD08D66f077c6ec3D41740c9931e40a9ce48cd06Aa60B8FC59E63C6eB9',
+  chainId: FuelNetwork.MAIN_NET
 })
   .onTransaction(
     async (tx, ctx) => {
