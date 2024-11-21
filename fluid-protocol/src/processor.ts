@@ -22,7 +22,13 @@ BorrowerOperationsContractProcessor.bind({
     },
     { includeFailed: true }
   )
-/* .onLogFoo(async (log, ctx) => {
-   // you can also call ctx.contract.functions.complex(...)
-   ctx.meter.Counter('fooLogged').add(1, { baz: String(log.data.baz) })
- })*/
+  .onLogOpenTroveEvent(async (log, ctx) => {
+    let timestamp = ctx.block?.time
+    // you can also call ctx.contract.functions.complex(...)
+    ctx.eventLogger.emit('troveOpened', { user: String(log.data.user), asset_id: String(log.data.asset_id), collateral: String(log.data.collateral), debt: String(log.data.debt), timestamp: String(timestamp) })
+  })
+  .onLogCloseTroveEvent(async (log, ctx) => {
+    let timestamp = ctx.block?.time
+    // you can also call ctx.contract.functions.complex(...)
+    ctx.eventLogger.emit('troveClosed', { user: String(log.data.user), asset_id: String(log.data.asset_id), collateral: String(log.data.collateral), debt: String(log.data.debt), timestamp: String(timestamp) })
+  })
