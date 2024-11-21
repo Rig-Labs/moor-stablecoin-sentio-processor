@@ -6,7 +6,7 @@ import { BorrowerOperationsContractProcessor } from './types/fuel/BorrowerOperat
 
 
 BorrowerOperationsContractProcessor.bind({
-  address: '0x243F0cfD08D66f077c6ec3D41740c9931e40a9ce48cd06Aa60B8FC59E63C6eB9',
+  address: '0xDDFC48F09400268C3AF9977CDEeBE4F43421afd2bfB913a2e385E4AFA47A4aBb',
   chainId: FuelNetwork.MAIN_NET
 })
   .onTransaction(
