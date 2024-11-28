@@ -1,0 +1,60 @@
+#############################
+# ASSET STATE ENTITIES #
+#############################
+
+# User base asset state
+type UserTrove @entity {
+    id: ID!
+    address: String!
+    assetId: String!
+    timestamp: Int!
+    total_collateral: BigInt!
+    total_collateral_USD: BigInt!
+    total_debt: BigInt!
+}
+
+# positon snapshot
+type PositionSnapshot @entity {
+    id: ID!
+    timestamp: Int!
+    blockDate: String!
+    chainId: Int!
+    poolAddress: String!
+    underlyingTokenAddress: String!
+    underlyingTokenSymbol: String!
+    userAddress: String!
+    suppliedAmount: BigInt!
+    suppliedAmountUsd: BigDecimal
+    borrowedAmount: BigInt!
+    borrowedAmountUsd: BigDecimal
+    collateralAmount: BigInt!
+    collateralAmountUsd: BigDecimal
+}
+    
+# pool snapshot
+type PoolSnapshot @entity {
+    id: ID!
+    timestamp: Int!
+    blockDate: String!
+    chainId: Int!
+    poolAddress: String!
+    underlyingTokenAddress: String!
+    underlyingTokenSymbol: String!
+    underlyingTokenPriceUsd: BigDecimal
+    availableAmount: BigInt!
+    availableAmountUsd: BigDecimal
+    suppliedAmount: BigInt!
+    suppliedAmountUsd: BigDecimal
+    collateralAmount: BigInt!
+    collateralAmountUsd: BigDecimal
+    collateralFactor: BigDecimal!
+    supplyIndex: BigDecimal!
+    supplyApr: BigDecimal!
+    borrowedAmount: BigInt!
+    borrowedAmountUsd: BigDecimal
+    borrowIndex: BigDecimal!
+    borrowApr: BigDecimal!
+    totalFeesUsd: BigDecimal
+    userFeesUsd: BigDecimal
+    protocolFeesUsd: BigDecimal
+}

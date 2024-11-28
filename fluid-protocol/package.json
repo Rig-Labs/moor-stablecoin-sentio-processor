@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "sentio build",
-    "gen": "sentio gen",
+    "build": "sentio build  --skip-deps --skip-gen",
+    "gen": "sentio gen --skip-deps",
     "test": "sentio test",
-    "upload": "sentio upload",
+    "upload": "sentio upload  --skip-deps --skip-gen",
     "postinstall": "sentio gen"
   },
   "dependencies": {
