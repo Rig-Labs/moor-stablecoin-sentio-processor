@@ -108,9 +108,9 @@ BorrowerOperationsContractProcessor.bind({
     let totalTroveData: { [key: string]: { [key: string]: any } } = {
       '0xafd219f513317b1750783c6581f55530d6cf189a5863fd18bd1b3ffcec1714b4': {
         symbol: 'METH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       },
       '0xbae80f7fb8aa6b90d9b01ef726ec847cc4f59419c4d5f2ea88fec785d1b0e849': {
         symbol: 'RSETH',
