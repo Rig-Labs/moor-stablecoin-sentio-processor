@@ -7,6 +7,7 @@ import { BorrowerOperationsContractProcessor } from './types/fuel/BorrowerOperat
 import { PositionSnapshot, UserTrove, PoolSnapshot } from './schema/store.js'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
+dayjs.extend(utc);
 
 const assets: { [key: string]: string } = {
   '0xafd219f513317b1750783c6581f55530d6cf189a5863fd18bd1b3ffcec1714b4': 'METH',
@@ -37,17 +38,17 @@ BorrowerOperationsContractProcessor.bind({
   .onLogOpenTroveEvent(async (log, ctx) => {
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveOpened', {
-      user: String(log.data.user),
-      asset_id: String(log.data.asset_id),
+      user: String(log.data.user.Address?.bits),
+      asset_id: String(log.data.asset_id.bits),
       collateral: String(log.data.collateral),
       debt: String(log.data.debt),
       timestamp: String(timestamp)
     })
-    const userTroveId = `${String(log.data.user)}_${String(log.data.asset_id)}`;
+    const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
     const userTrove = new UserTrove({
       id: userTroveId,
-      address: String(log.data.user),
-      assetId: String(log.data.asset_id),
+      address: String(log.data.user.Address?.bits),
+      assetId: String(log.data.asset_id.bits),
       timestamp: dayjs(ctx.timestamp.getTime()).utc().unix(),
       total_collateral: BigInt(String(log.data.collateral)),
       total_collateral_USD: BigInt(String(log.data.collateral)),
@@ -60,15 +61,15 @@ BorrowerOperationsContractProcessor.bind({
     let timestamp = ctx.block?.time
 
     ctx.eventLogger.emit('troveClosed', {
-      user: String(log.data.user),
-      asset_id: String(log.data.asset_id),
+      user: String(log.data.user.Address?.bits),
+      asset_id: String(log.data.asset_id.bits),
       collateral: String(log.data.collateral),
       debt: String(log.data.debt),
       timestamp: String(timestamp)
     })
 
-    const userTroveId = `${String(log.data.user)}_${String(log.data.asset_id)}`;
-    let userTrove = await ctx.store.get(UserTrove, userTroveId);
+    const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
+    let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
       userTrove.total_collateral = BigInt(String(log.data.collateral));
       userTrove.total_collateral_USD = BigInt(String(log.data.collateral));
@@ -79,8 +80,8 @@ BorrowerOperationsContractProcessor.bind({
   .onLogAdjustTroveEvent(async (log, ctx) => {
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveAdjusted', {
-      user: String(log.data.user),
-      asset_id: String(log.data.asset_id),
+      user: String(log.data.user.Address?.bits),
+      asset_id: String(log.data.asset_id.bits),
       collateral_change: String(log.data.collateral_change),
       is_debt_increase: String(log.data.is_debt_increase),
       debt_change: String(log.data.debt_change),
@@ -89,8 +90,8 @@ BorrowerOperationsContractProcessor.bind({
       total_debt: String(log.data.total_debt)
     })
 
-    const userTroveId = `${String(log.data.user)}_${String(log.data.asset_id)}`;
-    let userTrove = await ctx.store.get(UserTrove, userTroveId);
+    const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
+    let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
       userTrove.total_collateral = BigInt(String(log.data.total_collateral));
       userTrove.total_collateral_USD = BigInt(String(log.data.total_collateral));
@@ -102,7 +103,7 @@ BorrowerOperationsContractProcessor.bind({
     const START_TIME_UNIX = START_TIME.unix();
     const START_TIME_FORMATED = START_TIME.format('YYYY-MM-DD HH:00:00');
 
-    const userTroves = await ctx.store.list(UserTrove)
+    const userTroves = await ctx.store.list(UserTrove) as UserTrove[];
 
     let totalTroveData: { [key: string]: { [key: string]: any } } = {
       '0xafd219f513317b1750783c6581f55530d6cf189a5863fd18bd1b3ffcec1714b4': {
@@ -113,42 +114,42 @@ BorrowerOperationsContractProcessor.bind({
       },
       '0xbae80f7fb8aa6b90d9b01ef726ec847cc4f59419c4d5f2ea88fec785d1b0e849': {
         symbol: 'RSETH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       },
       '0x239ed6e12b7ce4089ee245244e3bf906999a6429c2a9a445a1e1faf56914a4ab': {
         symbol: 'WEETH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       },
       '0x91b3559edb2619cde8ffb2aa7b3c3be97efd794ea46700db7092abeee62281b0': {
         symbol: 'EZETH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       },
       '0x1a7815cc9f75db5c24a5b0814bfb706bb9fe485333e98254015de8f48f84c67b': {
         symbol: 'WSTETH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       },
       '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': {
         symbol: 'ETH',
-        total_collateral: 0,
-        total_collateral_USD: 0,
-        total_debt: 0
+        total_collateral: BigInt(0),
+        total_collateral_USD: BigInt(0),
+        total_debt: BigInt(0)
       }
     };
 
-    for (const userTrove of userTroves) {
+    for (const userTrove of userTroves as UserTrove[]) {
       const assetPrice = await getPriceBySymbol(assets[userTrove.assetId], ctx.timestamp);
       if (!assetPrice) {
-        throw new Error(`No price found for ${assets[userTrove.assetId]} at ${ctx.timestamp}`);
+        throw new Error(`No price found for ${String(userTrove.assetId)} at ${ctx.timestamp}`);
       }
-      const newPositionSnapshotId = `${userTrove.address}_${userTrove.assetId}`;
+      const newPositionSnapshotId = `${userTrove.address}_${userTrove.assetId}_${START_TIME_FORMATED}`;
       const newPositionSnapshot = new PositionSnapshot({
         id: newPositionSnapshotId,
         timestamp: START_TIME_UNIX,
@@ -156,12 +157,12 @@ BorrowerOperationsContractProcessor.bind({
         chainId: 9889,
         poolAddress: userTrove.assetId,
         underlyingTokenAddress: userTrove.assetId,
-        underlyingTokenSymbol: assets[userTrove.assetId],
+        underlyingTokenSymbol: assets[userTrove.assetId] || "NA",
         userAddress: userTrove.address,
         suppliedAmount: userTrove.total_collateral,
-        suppliedAmountUsd: BigDecimal((userTrove.total_collateral * BigInt(assetPrice)).toString()),
+        suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
         borrowedAmount: userTrove.total_debt,
-        borrowedAmountUsd: BigDecimal((userTrove.total_debt * BigInt(assetPrice)).toString()),
+        borrowedAmountUsd: BigDecimal(userTrove.total_debt.toString()).times(BigDecimal(assetPrice)),
         collateralAmount: 0n, //Following convention from swaylend they put collateral as supply and leave collateral empty...
         collateralAmountUsd: BigDecimal(0),
       });
@@ -174,7 +175,7 @@ BorrowerOperationsContractProcessor.bind({
     }
 
     for (const troveData in totalTroveData) {
-      const newPoolSnapshotId = `${troveData}`;
+      const newPoolSnapshotId = `${troveData}_${START_TIME_FORMATED}`;
       const newPoolSnapshot = new PoolSnapshot({
         id: newPoolSnapshotId,
         timestamp: START_TIME_UNIX,
@@ -201,6 +202,7 @@ BorrowerOperationsContractProcessor.bind({
         userFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
         protocolFeesUsd: BigDecimal(0) // for the purpose of fuel points program we don't need to index this
       })
+      await ctx.store.upsert(newPoolSnapshot);
     }
   },
     60,
