@@ -36,8 +36,8 @@ export class UserTrove extends AbstractEntity  {
 	total_collateral: BigInt
 
 	@Required
-	@Column("BigInt")
-	total_collateral_USD: BigInt
+	@Column("BigDecimal")
+	total_collateral_USD: BigDecimal
 
 	@Required
 	@Column("BigInt")
@@ -208,7 +208,7 @@ type UserTrove @entity {
     assetId: String!
     timestamp: Int!
     total_collateral: BigInt!
-    total_collateral_USD: BigInt!
+    total_collateral_USD: BigDecimal!
     total_debt: BigInt!
 }
 

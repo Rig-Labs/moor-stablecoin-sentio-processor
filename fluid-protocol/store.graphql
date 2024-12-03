@@ -9,7 +9,7 @@ type UserTrove @entity {
     assetId: String!
     timestamp: Int!
     total_collateral: BigInt!
-    total_collateral_USD: BigInt!
+    total_collateral_USD: BigDecimal!
     total_debt: BigInt!
 }
 
