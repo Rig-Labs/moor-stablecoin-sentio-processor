@@ -268,13 +268,13 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenAddress: userTrove.assetId,
         underlyingTokenSymbol: assets[userTrove.assetId] || "NA",
         userAddress: userTrove.address,
-        suppliedAmount: userTrove.total_collateral,
-        suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
+        suppliedAmount: BigInt(0),
+        suppliedAmountUsd: BigDecimal(0),
         borrowed_amount_usd: BigInt(0),
         borrowed_amount: BigInt(0),
         usdf: userTrove.total_debt,
-        collateralAmount: 0n, //Following convention from swaylend they put collateral as supply and leave collateral empty...
-        collateralAmountUsd: BigDecimal(0),
+        collateralAmount: userTrove.total_collateral, //Following convention from swaylend they put collateral as supply and leave collateral empty...
+        collateralAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
       });
 
       totalTroveData[userTrove.assetId].total_collateral += userTrove.total_collateral;
@@ -297,10 +297,10 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenPriceUsd: BigDecimal(0), // need to add this
         availableAmount: BigInt(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
-        suppliedAmount: BigInt(totalTroveData[troveData].total_collateral),
-        suppliedAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
-        collateralAmount: BigInt(0),
-        collateralAmountUsd: BigDecimal(0),
+        suppliedAmount: BigInt(0),
+        suppliedAmountUsd: BigDecimal(0),
+        collateralAmount: BigInt(BigInt(totalTroveData[troveData].total_collateral)),
+        collateralAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
