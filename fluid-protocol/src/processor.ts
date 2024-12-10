@@ -5,7 +5,7 @@ import { BigDecimal } from '@sentio/sdk';
 import { getPriceBySymbol } from '@sentio/sdk/utils';
 import { BorrowerOperationsContractProcessor } from './types/fuel/BorrowerOperationsContractProcessor.js'
 import { TroveManagerContractProcessor } from './types/fuel/TroveManagerContractProcessor.js'
-import { PositionSnapshot, UserTrove, PoolSnapshot } from './schema/store.js'
+import { PositionSnapshot, UserTrove, PoolSnapshot, Pool } from './schema/store.js'
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 dayjs.extend(utc);
@@ -192,6 +192,26 @@ BorrowerOperationsContractProcessor.bind({
     const START_TIME_UNIX = START_TIME.unix();
     const START_TIME_FORMATED = START_TIME.format('YYYY-MM-DD HH:00:00');
 
+    for (const asset in troveManagers) {
+      const poolId = `${String(troveManagers[asset])}`;
+      let pool = await ctx.store.get(Pool, poolId) as Pool;
+      if (!pool) {
+        pool = new Pool({
+          id: String(troveManagers[asset]),
+          timestamp: START_TIME_UNIX,
+          creation_block_number: Number(ctx.transaction?.blockNumber),
+          chainId: 9889,
+          underlying_token_address: String(asset),
+          underlying_token_symbol: assets[asset],
+          receipt_token_address: String(""),
+          receipt_token_symbol: String(""),
+          pool_address: String(troveManagers[asset]),
+          pool_type: 'cdp'
+        });
+        await ctx.store.upsert(pool);
+      }
+    }
+
     const userTroves = await ctx.store.list(UserTrove) as UserTrove[];
 
     let totalTroveData: { [key: string]: { [key: string]: any } } = {
@@ -250,8 +270,7 @@ BorrowerOperationsContractProcessor.bind({
         userAddress: userTrove.address,
         suppliedAmount: userTrove.total_collateral,
         suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
-        borrowedAmount: userTrove.total_debt,
-        borrowedAmountUsd: BigDecimal(userTrove.total_debt.toString()),
+        usdf: userTrove.total_debt,
         collateralAmount: 0n, //Following convention from swaylend they put collateral as supply and leave collateral empty...
         collateralAmountUsd: BigDecimal(0),
       });
@@ -283,8 +302,7 @@ BorrowerOperationsContractProcessor.bind({
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
-        borrowedAmount: BigInt(totalTroveData[troveData].total_debt),
-        borrowedAmountUsd: BigDecimal(totalTroveData[troveData].total_debt_USD),
+        usdf: BigInt(totalTroveData[troveData].total_debt),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
         totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this

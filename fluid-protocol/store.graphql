@@ -12,6 +12,19 @@ type UserTrove @entity {
     total_collateral_USD: BigDecimal!
     total_debt: BigInt!
 }
+# pool
+type Pool @entity {
+    id: ID!
+    timestamp: Int!
+    creation_block_number: Int!
+    chainId: Int!
+    underlying_token_address: String!
+    underlying_token_symbol: String!
+    receipt_token_address: String!
+    receipt_token_symbol: String!
+    pool_address: String!
+    pool_type: String!
+}
 
 # positon snapshot
 type PositionSnapshot @entity {
@@ -25,8 +38,7 @@ type PositionSnapshot @entity {
     userAddress: String!
     suppliedAmount: BigInt!
     suppliedAmountUsd: BigDecimal
-    borrowedAmount: BigInt!
-    borrowedAmountUsd: BigDecimal
+    usdf: BigInt!
     collateralAmount: BigInt!
     collateralAmountUsd: BigDecimal
 }
@@ -50,8 +62,7 @@ type PoolSnapshot @entity {
     collateralFactor: BigDecimal!
     supplyIndex: BigDecimal!
     supplyApr: BigDecimal!
-    borrowedAmount: BigInt!
-    borrowedAmountUsd: BigDecimal
+    usdf: BigInt!
     borrowIndex: BigDecimal!
     borrowApr: BigDecimal!
     totalFeesUsd: BigDecimal

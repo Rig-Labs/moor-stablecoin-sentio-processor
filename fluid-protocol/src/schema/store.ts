@@ -45,6 +45,51 @@ export class UserTrove extends AbstractEntity  {
   constructor(data: Partial<UserTrove>) {super()}
 }
 
+@Entity("Pool")
+export class Pool extends AbstractEntity  {
+
+	@Required
+	@Column("ID")
+	id: ID
+
+	@Required
+	@Column("Int")
+	timestamp: Int
+
+	@Required
+	@Column("Int")
+	creation_block_number: Int
+
+	@Required
+	@Column("Int")
+	chainId: Int
+
+	@Required
+	@Column("String")
+	underlying_token_address: String
+
+	@Required
+	@Column("String")
+	underlying_token_symbol: String
+
+	@Required
+	@Column("String")
+	receipt_token_address: String
+
+	@Required
+	@Column("String")
+	receipt_token_symbol: String
+
+	@Required
+	@Column("String")
+	pool_address: String
+
+	@Required
+	@Column("String")
+	pool_type: String
+  constructor(data: Partial<Pool>) {super()}
+}
+
 @Entity("PositionSnapshot")
 export class PositionSnapshot extends AbstractEntity  {
 
@@ -89,10 +134,7 @@ export class PositionSnapshot extends AbstractEntity  {
 
 	@Required
 	@Column("BigInt")
-	borrowedAmount: BigInt
-
-	@Column("BigDecimal")
-	borrowedAmountUsd?: BigDecimal
+	usdf: BigInt
 
 	@Required
 	@Column("BigInt")
@@ -172,10 +214,7 @@ export class PoolSnapshot extends AbstractEntity  {
 
 	@Required
 	@Column("BigInt")
-	borrowedAmount: BigInt
-
-	@Column("BigDecimal")
-	borrowedAmountUsd?: BigDecimal
+	usdf: BigInt
 
 	@Required
 	@Column("BigDecimal")
@@ -211,6 +250,19 @@ type UserTrove @entity {
     total_collateral_USD: BigDecimal!
     total_debt: BigInt!
 }
+# pool
+type Pool @entity {
+    id: ID!
+    timestamp: Int!
+    creation_block_number: Int!
+    chainId: Int!
+    underlying_token_address: String!
+    underlying_token_symbol: String!
+    receipt_token_address: String!
+    receipt_token_symbol: String!
+    pool_address: String!
+    pool_type: String!
+}
 
 # positon snapshot
 type PositionSnapshot @entity {
@@ -224,8 +276,7 @@ type PositionSnapshot @entity {
     userAddress: String!
     suppliedAmount: BigInt!
     suppliedAmountUsd: BigDecimal
-    borrowedAmount: BigInt!
-    borrowedAmountUsd: BigDecimal
+    usdf: BigInt!
     collateralAmount: BigInt!
     collateralAmountUsd: BigDecimal
 }
@@ -249,8 +300,7 @@ type PoolSnapshot @entity {
     collateralFactor: BigDecimal!
     supplyIndex: BigDecimal!
     supplyApr: BigDecimal!
-    borrowedAmount: BigInt!
-    borrowedAmountUsd: BigDecimal
+    usdf: BigInt!
     borrowIndex: BigDecimal!
     borrowApr: BigDecimal!
     totalFeesUsd: BigDecimal
@@ -261,6 +311,7 @@ DatabaseSchema.register({
   source,
   entities: {
     "UserTrove": UserTrove,
+		"Pool": Pool,
 		"PositionSnapshot": PositionSnapshot,
 		"PoolSnapshot": PoolSnapshot
   }
