@@ -258,9 +258,9 @@ BorrowerOperationsContractProcessor.bind({
       if (!assetPrice) {
         throw new Error(`No price found for ${String(userTrove.assetId)} at ${ctx.timestamp}`);
       }
-      const newPositionSnapshotId = `${userTrove.address}_${userTrove.assetId}_${START_TIME_FORMATED}`;
-      const newPositionSnapshot = new PositionSnapshot({
-        id: newPositionSnapshotId,
+      const newPositionSnapshotCollateralId = `${userTrove.address}_${userTrove.assetId}_${START_TIME_FORMATED}_collateral`;
+      const newPositionSnapshotCollateral = new PositionSnapshot({
+        id: newPositionSnapshotCollateralId,
         timestamp: START_TIME_UNIX,
         blockDate: START_TIME_FORMATED,
         chainId: 9889,
@@ -272,22 +272,39 @@ BorrowerOperationsContractProcessor.bind({
         suppliedAmountUsd: BigDecimal(0),
         borrowed_amount_usd: BigInt(0),
         borrowed_amount: BigInt(0),
-        usdf: userTrove.total_debt,
-        collateralAmount: userTrove.total_collateral, //Following convention from swaylend they put collateral as supply and leave collateral empty...
+        collateralAmount: userTrove.total_collateral,
         collateralAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
+      });
+      const newPositionSnapshotDebtId = `${userTrove.address}_${userTrove.assetId}_${START_TIME_FORMATED}_debt`;
+      const newPositionSnapshotDebt = new PositionSnapshot({
+        id: newPositionSnapshotDebtId,
+        timestamp: START_TIME_UNIX,
+        blockDate: START_TIME_FORMATED,
+        chainId: 9889,
+        poolAddress: userTrove.assetId,
+        underlyingTokenAddress: userTrove.assetId,
+        underlyingTokenSymbol: assets[userTrove.assetId] || "NA",
+        userAddress: userTrove.address,
+        suppliedAmount: BigInt(0),
+        suppliedAmountUsd: BigDecimal(0),
+        borrowed_amount_usd: BigInt(userTrove.total_debt),
+        borrowed_amount: userTrove.total_debt,
+        collateralAmount: BigInt(0),
+        collateralAmountUsd: BigDecimal(0),
       });
 
       totalTroveData[userTrove.assetId].total_collateral += userTrove.total_collateral;
       totalTroveData[userTrove.assetId].total_collateral_USD += userTrove.total_collateral_USD;
       totalTroveData[userTrove.assetId].total_debt += userTrove.total_debt;
 
-      await ctx.store.upsert(newPositionSnapshot);
+      await ctx.store.upsert(newPositionSnapshotCollateral);
+      await ctx.store.upsert(newPositionSnapshotDebt);
     }
 
     for (const troveData in totalTroveData) {
-      const newPoolSnapshotId = `${troveData}_${START_TIME_FORMATED}`;
-      const newPoolSnapshot = new PoolSnapshot({
-        id: newPoolSnapshotId,
+      const newPoolSnapshotCollateralId = `${troveData}_${START_TIME_FORMATED}_collateral`;
+      const newPoolSnapshotCollateral = new PoolSnapshot({
+        id: newPoolSnapshotCollateralId,
         timestamp: START_TIME_UNIX,
         blockDate: START_TIME_FORMATED,
         chainId: 9889,
@@ -304,7 +321,6 @@ BorrowerOperationsContractProcessor.bind({
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
-        usdf: BigInt(totalTroveData[troveData].total_debt),
         borrowed_amount_usd: BigInt(0),
         borrowed_amount: BigInt(0),
         borrowIndex: BigDecimal(0), //?
@@ -313,7 +329,35 @@ BorrowerOperationsContractProcessor.bind({
         userFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
         protocolFeesUsd: BigDecimal(0) // for the purpose of fuel points program we don't need to index this
       })
-      await ctx.store.upsert(newPoolSnapshot);
+      const newPoolSnapshotDebtId = `${troveData}_${START_TIME_FORMATED}_debt`;
+      const newPoolSnapshotDebt = new PoolSnapshot({
+        id: newPoolSnapshotDebtId,
+        timestamp: START_TIME_UNIX,
+        blockDate: START_TIME_FORMATED,
+        chainId: 9889,
+        poolAddress: String(troveData),
+        underlyingTokenAddress: String(troveData),
+        underlyingTokenSymbol: String(totalTroveData[troveData].symbol),
+        underlyingTokenPriceUsd: BigDecimal(0), // need to add this
+        availableAmount: BigInt(0), // unlimited amount available
+        availableAmountUsd: BigDecimal(0), // same
+        suppliedAmount: BigInt(0),
+        suppliedAmountUsd: BigDecimal(0),
+        collateralAmount: BigInt(0),
+        collateralAmountUsd: BigDecimal(0),
+        collateralFactor: BigDecimal(0), //?
+        supplyIndex: BigDecimal(0), //?
+        supplyApr: BigDecimal(0), //no APR, fixed fee model
+        borrowed_amount_usd: BigInt(totalTroveData[troveData].total_debt),
+        borrowed_amount: BigInt(totalTroveData[troveData].total_debt),
+        borrowIndex: BigDecimal(0), //?
+        borrowApr: BigDecimal(0), //no APR, fixed fee model
+        totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
+        userFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
+        protocolFeesUsd: BigDecimal(0) // for the purpose of fuel points program we don't need to index this
+      })
+      await ctx.store.upsert(newPoolSnapshotCollateral);
+      await ctx.store.upsert(newPoolSnapshotDebt);
     }
   },
     60,

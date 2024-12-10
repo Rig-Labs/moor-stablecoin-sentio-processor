@@ -134,10 +134,6 @@ export class PositionSnapshot extends AbstractEntity  {
 
 	@Required
 	@Column("BigInt")
-	usdf: BigInt
-
-	@Required
-	@Column("BigInt")
 	borrowed_amount: BigInt
 
 	@Required
@@ -222,10 +218,6 @@ export class PoolSnapshot extends AbstractEntity  {
 
 	@Required
 	@Column("BigInt")
-	usdf: BigInt
-
-	@Required
-	@Column("BigInt")
 	borrowed_amount: BigInt
 
 	@Required
@@ -292,7 +284,6 @@ type PositionSnapshot @entity {
     userAddress: String!
     suppliedAmount: BigInt!
     suppliedAmountUsd: BigDecimal
-    usdf: BigInt!
     borrowed_amount: BigInt!
     borrowed_amount_usd: BigInt!
     collateralAmount: BigInt!
@@ -318,7 +309,6 @@ type PoolSnapshot @entity {
     collateralFactor: BigDecimal!
     supplyIndex: BigDecimal!
     supplyApr: BigDecimal!
-    usdf: BigInt!
     borrowed_amount: BigInt!
     borrowed_amount_usd: BigInt!
     borrowIndex: BigDecimal!
