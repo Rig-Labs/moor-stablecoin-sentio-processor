@@ -8,9 +8,9 @@ type UserTrove @entity {
     address: String!
     assetId: String!
     timestamp: Int!
-    total_collateral: BigInt!
+    total_collateral: BigDecimal!
     total_collateral_USD: BigDecimal!
-    total_debt: BigInt!
+    total_debt: BigDecimal!
 }
 # pool
 type Pool @entity {
@@ -36,11 +36,11 @@ type PositionSnapshot @entity {
     underlyingTokenAddress: String!
     underlyingTokenSymbol: String!
     userAddress: String!
-    suppliedAmount: BigInt!
+    suppliedAmount: BigDecimal!
     suppliedAmountUsd: BigDecimal
-    borrowed_amount: BigInt!
-    borrowed_amount_usd: BigInt!
-    collateralAmount: BigInt!
+    borrowed_amount: BigDecimal!
+    borrowed_amount_usd: BigDecimal!
+    collateralAmount: BigDecimal!
     collateralAmountUsd: BigDecimal
 }
     
@@ -54,17 +54,17 @@ type PoolSnapshot @entity {
     underlyingTokenAddress: String!
     underlyingTokenSymbol: String!
     underlyingTokenPriceUsd: BigDecimal
-    availableAmount: BigInt!
+    availableAmount: BigDecimal!
     availableAmountUsd: BigDecimal
-    suppliedAmount: BigInt!
+    suppliedAmount: BigDecimal!
     suppliedAmountUsd: BigDecimal
-    collateralAmount: BigInt!
+    collateralAmount: BigDecimal!
     collateralAmountUsd: BigDecimal
     collateralFactor: BigDecimal!
     supplyIndex: BigDecimal!
     supplyApr: BigDecimal!
-    borrowed_amount: BigInt!
-    borrowed_amount_usd: BigInt!
+    borrowed_amount: BigDecimal!
+    borrowed_amount_usd: BigDecimal!
     borrowIndex: BigDecimal!
     borrowApr: BigDecimal!
     totalFeesUsd: BigDecimal

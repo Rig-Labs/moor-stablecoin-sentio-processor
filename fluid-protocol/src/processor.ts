@@ -54,9 +54,9 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigInt(String(log.data.collateral_amount)) / ASSET_DECIMALS;
+      userTrove.total_collateral = BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigInt(String(log.data.usdf_amount)) / ASSET_DECIMALS;
+      userTrove.total_debt = BigDecimal(String(log.data.usdf_amount)).div(ASSET_DECIMALS_BIGDECIMAL);
       await ctx.store.upsert(userTrove);
     }
   }).onLogTroveFullLiquidationEvent(async (log, ctx) => {
@@ -71,9 +71,9 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigInt(String(0));
+      userTrove.total_collateral = BigDecimal(String(0));
       userTrove.total_collateral_USD = BigDecimal(String(0));
-      userTrove.total_debt = BigInt(String(0));
+      userTrove.total_debt = BigDecimal(String(0));
       await ctx.store.upsert(userTrove);
     }
   }).onLogTrovePartialLiquidationEvent(async (log, ctx) => {
@@ -92,9 +92,9 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigInt(String(log.data.remaining_collateral)) / ASSET_DECIMALS;
+      userTrove.total_collateral = BigDecimal(String(log.data.remaining_collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.remaining_collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigInt(String(log.data.remaining_debt)) / ASSET_DECIMALS;
+      userTrove.total_debt = BigDecimal(String(log.data.remaining_debt)).div(ASSET_DECIMALS_BIGDECIMAL);
       await ctx.store.upsert(userTrove);
     }
   })
@@ -136,9 +136,9 @@ BorrowerOperationsContractProcessor.bind({
       address: String(log.data.user.Address?.bits),
       assetId: String(log.data.asset_id.bits),
       timestamp: dayjs(ctx.timestamp.getTime()).utc().unix(),
-      total_collateral: BigInt(String(log.data.collateral)) / ASSET_DECIMALS,
+      total_collateral: BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL),
       total_collateral_USD: BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice)),
-      total_debt: BigInt(String(log.data.debt)) / ASSET_DECIMALS
+      total_debt: BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL)
     });
 
     await ctx.store.upsert(userTrove);
@@ -159,9 +159,9 @@ BorrowerOperationsContractProcessor.bind({
     const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigInt(String(log.data.collateral)) / ASSET_DECIMALS;
+      userTrove.total_collateral = BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigInt(String(log.data.debt)) / ASSET_DECIMALS;
+      userTrove.total_debt = BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL);
       await ctx.store.upsert(userTrove);
     }
   })
@@ -184,9 +184,9 @@ BorrowerOperationsContractProcessor.bind({
     const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigInt(String(log.data.total_collateral)) / ASSET_DECIMALS;
+      userTrove.total_collateral = BigDecimal(String(log.data.total_collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.total_collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigInt(String(log.data.total_debt)) / ASSET_DECIMALS;
+      userTrove.total_debt = BigDecimal(String(log.data.total_debt)).div(ASSET_DECIMALS_BIGDECIMAL);
       await ctx.store.upsert(userTrove);
     }
   }).onTimeInterval(async (_, ctx) => {
@@ -272,8 +272,8 @@ BorrowerOperationsContractProcessor.bind({
         userAddress: userTrove.address,
         suppliedAmount: userTrove.total_collateral,
         suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
-        borrowed_amount_usd: BigInt(0),
-        borrowed_amount: BigInt(0),
+        borrowed_amount_usd: BigDecimal(0),
+        borrowed_amount: BigDecimal(0),
         collateralAmount: userTrove.total_collateral,
         collateralAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
       });
@@ -287,11 +287,11 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenAddress: USDF_ASSET_ID,
         underlyingTokenSymbol: "USDF",
         userAddress: userTrove.address,
-        suppliedAmount: BigInt(0),
+        suppliedAmount: BigDecimal(0),
         suppliedAmountUsd: BigDecimal(0),
-        borrowed_amount_usd: BigInt(userTrove.total_debt),
+        borrowed_amount_usd: BigDecimal(userTrove.total_debt),
         borrowed_amount: userTrove.total_debt,
-        collateralAmount: BigInt(0),
+        collateralAmount: BigDecimal(0),
         collateralAmountUsd: BigDecimal(0),
       });
 
@@ -318,17 +318,17 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenAddress: String(troveData),
         underlyingTokenSymbol: String(totalTroveData[troveData].symbol),
         underlyingTokenPriceUsd: BigDecimal(assetPrice), // need to add this
-        availableAmount: BigInt(0), // unlimited amount available
+        availableAmount: BigDecimal(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
-        suppliedAmount: BigInt(BigInt(totalTroveData[troveData].total_collateral)),
+        suppliedAmount: BigDecimal(totalTroveData[troveData].total_collateral),
         suppliedAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
-        collateralAmount: BigInt(BigInt(totalTroveData[troveData].total_collateral)),
+        collateralAmount: BigDecimal(totalTroveData[troveData].total_collateral),
         collateralAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
-        borrowed_amount_usd: BigInt(0),
-        borrowed_amount: BigInt(0),
+        borrowed_amount_usd: BigDecimal(0),
+        borrowed_amount: BigDecimal(0),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
         totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
@@ -345,17 +345,17 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenAddress: String(USDF_ASSET_ID),
         underlyingTokenSymbol: String("USDF"),
         underlyingTokenPriceUsd: BigDecimal(1), // need to add this
-        availableAmount: BigInt(0), // unlimited amount available
+        availableAmount: BigDecimal(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
-        suppliedAmount: BigInt(0),
+        suppliedAmount: BigDecimal(0),
         suppliedAmountUsd: BigDecimal(0),
-        collateralAmount: BigInt(0),
+        collateralAmount: BigDecimal(0),
         collateralAmountUsd: BigDecimal(0),
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
-        borrowed_amount_usd: BigInt(totalTroveData[troveData].total_debt),
-        borrowed_amount: BigInt(totalTroveData[troveData].total_debt),
+        borrowed_amount_usd: BigDecimal(totalTroveData[troveData].total_debt),
+        borrowed_amount: BigDecimal(totalTroveData[troveData].total_debt),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
         totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
