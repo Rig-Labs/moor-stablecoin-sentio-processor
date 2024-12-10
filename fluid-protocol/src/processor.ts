@@ -13,6 +13,8 @@ dayjs.extend(utc);
 const ASSET_DECIMALS = BigInt(BigDecimal(10).pow(9).toNumber());
 const ASSET_DECIMALS_BIGDECIMAL = BigDecimal(10).pow(9);
 
+const USDF_ASSET_ID = '0x33a6d90877f12c7954cca6d65587c25e9214c7bed2231c188981c7114c1bdb78';
+
 const assets: { [key: string]: string } = {
   '0xafd219f513317b1750783c6581f55530d6cf189a5863fd18bd1b3ffcec1714b4': 'METH',
   '0xbae80f7fb8aa6b90d9b01ef726ec847cc4f59419c4d5f2ea88fec785d1b0e849': 'RSETH',
@@ -302,6 +304,10 @@ BorrowerOperationsContractProcessor.bind({
     }
 
     for (const troveData in totalTroveData) {
+      const assetPrice = await getPriceBySymbol(assets[troveData], ctx.timestamp);
+      if (!assetPrice) {
+        throw new Error(`No price found for ${String(assets[troveData])} at ${ctx.timestamp}`);
+      }
       const newPoolSnapshotCollateralId = `${troveData}_${START_TIME_FORMATED}_collateral`;
       const newPoolSnapshotCollateral = new PoolSnapshot({
         id: newPoolSnapshotCollateralId,
@@ -311,7 +317,7 @@ BorrowerOperationsContractProcessor.bind({
         poolAddress: String(troveData),
         underlyingTokenAddress: String(troveData),
         underlyingTokenSymbol: String(totalTroveData[troveData].symbol),
-        underlyingTokenPriceUsd: BigDecimal(0), // need to add this
+        underlyingTokenPriceUsd: BigDecimal(assetPrice), // need to add this
         availableAmount: BigInt(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
         suppliedAmount: BigInt(0),
@@ -336,9 +342,9 @@ BorrowerOperationsContractProcessor.bind({
         blockDate: START_TIME_FORMATED,
         chainId: 9889,
         poolAddress: String(troveData),
-        underlyingTokenAddress: String(troveData),
-        underlyingTokenSymbol: String(totalTroveData[troveData].symbol),
-        underlyingTokenPriceUsd: BigDecimal(0), // need to add this
+        underlyingTokenAddress: String(USDF_ASSET_ID),
+        underlyingTokenSymbol: String("USDF"),
+        underlyingTokenPriceUsd: BigDecimal(1), // need to add this
         availableAmount: BigInt(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
         suppliedAmount: BigInt(0),
