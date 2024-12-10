@@ -270,6 +270,8 @@ BorrowerOperationsContractProcessor.bind({
         userAddress: userTrove.address,
         suppliedAmount: userTrove.total_collateral,
         suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
+        borrowed_amount_usd: BigInt(0),
+        borrowed_amount: BigInt(0),
         usdf: userTrove.total_debt,
         collateralAmount: 0n, //Following convention from swaylend they put collateral as supply and leave collateral empty...
         collateralAmountUsd: BigDecimal(0),
@@ -297,12 +299,14 @@ BorrowerOperationsContractProcessor.bind({
         availableAmountUsd: BigDecimal(0), // same
         suppliedAmount: BigInt(totalTroveData[troveData].total_collateral),
         suppliedAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
-        collateralAmount: BigInt(totalTroveData[troveData].total_collateral),
-        collateralAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
+        collateralAmount: BigInt(0),
+        collateralAmountUsd: BigDecimal(0),
         collateralFactor: BigDecimal(0), //?
         supplyIndex: BigDecimal(0), //?
         supplyApr: BigDecimal(0), //no APR, fixed fee model
         usdf: BigInt(totalTroveData[troveData].total_debt),
+        borrowed_amount_usd: BigInt(0),
+        borrowed_amount: BigInt(0),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
         totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
