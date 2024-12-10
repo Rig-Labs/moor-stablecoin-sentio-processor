@@ -270,8 +270,8 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenAddress: userTrove.assetId,
         underlyingTokenSymbol: assets[userTrove.assetId] || "NA",
         userAddress: userTrove.address,
-        suppliedAmount: BigInt(0),
-        suppliedAmountUsd: BigDecimal(0),
+        suppliedAmount: userTrove.total_collateral,
+        suppliedAmountUsd: BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)),
         borrowed_amount_usd: BigInt(0),
         borrowed_amount: BigInt(0),
         collateralAmount: userTrove.total_collateral,
@@ -320,8 +320,8 @@ BorrowerOperationsContractProcessor.bind({
         underlyingTokenPriceUsd: BigDecimal(assetPrice), // need to add this
         availableAmount: BigInt(0), // unlimited amount available
         availableAmountUsd: BigDecimal(0), // same
-        suppliedAmount: BigInt(0),
-        suppliedAmountUsd: BigDecimal(0),
+        suppliedAmount: BigInt(BigInt(totalTroveData[troveData].total_collateral)),
+        suppliedAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
         collateralAmount: BigInt(BigInt(totalTroveData[troveData].total_collateral)),
         collateralAmountUsd: BigDecimal(totalTroveData[troveData].total_collateral_USD),
         collateralFactor: BigDecimal(0), //?
