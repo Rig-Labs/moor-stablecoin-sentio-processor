@@ -159,9 +159,9 @@ BorrowerOperationsContractProcessor.bind({
     const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
-      userTrove.total_collateral_USD = BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL);
+      userTrove.total_collateral = BigDecimal(0);
+      userTrove.total_collateral_USD = BigDecimal(0);
+      userTrove.total_debt = BigDecimal(0);
       await ctx.store.upsert(userTrove);
     }
   })
@@ -219,39 +219,39 @@ BorrowerOperationsContractProcessor.bind({
     let totalTroveData: { [key: string]: { [key: string]: any } } = {
       '0xafd219f513317b1750783c6581f55530d6cf189a5863fd18bd1b3ffcec1714b4': {
         symbol: 'METH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       },
       '0xbae80f7fb8aa6b90d9b01ef726ec847cc4f59419c4d5f2ea88fec785d1b0e849': {
         symbol: 'RSETH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       },
       '0x239ed6e12b7ce4089ee245244e3bf906999a6429c2a9a445a1e1faf56914a4ab': {
         symbol: 'WEETH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       },
       '0x91b3559edb2619cde8ffb2aa7b3c3be97efd794ea46700db7092abeee62281b0': {
         symbol: 'EZETH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       },
       '0x1a7815cc9f75db5c24a5b0814bfb706bb9fe485333e98254015de8f48f84c67b': {
         symbol: 'WSTETH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       },
       '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': {
         symbol: 'ETH',
-        total_collateral: BigInt(0),
-        total_collateral_USD: BigInt(0),
-        total_debt: BigInt(0)
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       }
     };
 
@@ -295,9 +295,9 @@ BorrowerOperationsContractProcessor.bind({
         collateralAmountUsd: BigDecimal(0),
       });
 
-      totalTroveData[userTrove.assetId].total_collateral += userTrove.total_collateral;
-      totalTroveData[userTrove.assetId].total_collateral_USD += userTrove.total_collateral_USD;
-      totalTroveData[userTrove.assetId].total_debt += userTrove.total_debt;
+      totalTroveData[userTrove.assetId].total_collateral = totalTroveData[userTrove.assetId].total_collateral.plus(userTrove.total_collateral);
+      totalTroveData[userTrove.assetId].total_collateral_USD = totalTroveData[userTrove.assetId].total_collateral_USD.plus(BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)));
+      totalTroveData[userTrove.assetId].total_debt = totalTroveData[userTrove.assetId].total_debt.plus(userTrove.total_debt);
 
       await ctx.store.upsert(newPositionSnapshotCollateral);
       await ctx.store.upsert(newPositionSnapshotDebt);
