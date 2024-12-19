@@ -54,9 +54,9 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
-      userTrove.total_collateral = BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL);
-      userTrove.total_collateral_USD = BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
-      userTrove.total_debt = BigDecimal(String(log.data.usdf_amount)).div(ASSET_DECIMALS_BIGDECIMAL);
+      userTrove.total_collateral = userTrove.total_collateral.minus(BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL));
+      userTrove.total_collateral_USD = userTrove.total_collateral_USD.minus(BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice)));
+      userTrove.total_debt = userTrove.total_debt.minus(BigDecimal(String(log.data.usdf_amount)).div(ASSET_DECIMALS_BIGDECIMAL));
       await ctx.store.upsert(userTrove);
     }
   }).onLogTroveFullLiquidationEvent(async (log, ctx) => {
