@@ -21,7 +21,8 @@ const assets: { [key: string]: string } = {
   '0x239ed6e12b7ce4089ee245244e3bf906999a6429c2a9a445a1e1faf56914a4ab': 'WEETH',
   '0x91b3559edb2619cde8ffb2aa7b3c3be97efd794ea46700db7092abeee62281b0': 'EZETH',
   '0x1a7815cc9f75db5c24a5b0814bfb706bb9fe485333e98254015de8f48f84c67b': 'WSTETH',
-  '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': 'ETH'
+  '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': 'ETH',
+  '0x1d5d97005e41cae2187a895fd8eab0506111e0e2f3331cd3912c15c24e3c1d82': 'FUEL'
 }
 
 // asset id : trove manager
@@ -31,7 +32,8 @@ const troveManagers: { [key: string]: string } = {
   '0x239ed6e12b7ce4089ee245244e3bf906999a6429c2a9a445a1e1faf56914a4ab': '0x4cdbfd7958cffe4562357104271c23228139e5a77933f0d4795f52ca7b715353',
   '0x91b3559edb2619cde8ffb2aa7b3c3be97efd794ea46700db7092abeee62281b0': '0x5e8956e557b1e0bc79d7064222d1e853163ff8edc928be8f5ec32c1abd13df7e',
   '0x1a7815cc9f75db5c24a5b0814bfb706bb9fe485333e98254015de8f48f84c67b': '0x9eea94d170cfb8a1831e7c86e5167acad3e3d1166ddfc81c725377267622ec8e',
-  '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': '0x8b90326e5e82ca3b0a2d0fa0ef42023d2df25360e538d5833e94599a1178c64f'
+  '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': '0x8b90326e5e82ca3b0a2d0fa0ef42023d2df25360e538d5833e94599a1178c64f',
+  '0x1d5d97005e41cae2187a895fd8eab0506111e0e2f3331cd3912c15c24e3c1d82': '0x0dc6d851feaa11c59b5927ebc862ff6187a5cf3a424b1fb026d60374938e2839'
 }
 
 for (const troveManagerAsset in troveManagers) {
@@ -40,9 +42,10 @@ for (const troveManagerAsset in troveManagers) {
     chainId: FuelNetwork.MAIN_NET
   }).onLogRedemptionEvent(async (log, ctx) => {
     let timestamp = ctx.block?.time
-    const assetPrice = await getPriceBySymbol(assets[troveManagerAsset], ctx.timestamp);
+    let assetPrice = await getPriceBySymbol(assets[troveManagerAsset], ctx.timestamp);
     if (!assetPrice) {
-      throw new Error(`No price found for ${String(troveManagerAsset)} at ${ctx.timestamp}`);
+      assetPrice = 0;
+      //throw new Error(`No price found for ${String(troveManagerAsset)} at ${ctx.timestamp}`);
     }
     ctx.eventLogger.emit('troveRedeemed', {
       user: String(log.data.borrower.Address?.bits),
@@ -77,9 +80,10 @@ for (const troveManagerAsset in troveManagers) {
       await ctx.store.upsert(userTrove);
     }
   }).onLogTrovePartialLiquidationEvent(async (log, ctx) => {
-    const assetPrice = await getPriceBySymbol(assets[troveManagerAsset], ctx.timestamp);
+    let assetPrice = await getPriceBySymbol(assets[troveManagerAsset], ctx.timestamp);
     if (!assetPrice) {
-      throw new Error(`No price found for ${String(troveManagerAsset)} at ${ctx.timestamp}`);
+      assetPrice = 0;
+      //throw new Error(`No price found for ${String(troveManagerAsset)} at ${ctx.timestamp}`);
     }
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('trovePartiallyLiquidated', {
@@ -118,9 +122,10 @@ BorrowerOperationsContractProcessor.bind({
     { includeFailed: true }
   )
   .onLogOpenTroveEvent(async (log, ctx) => {
-    const assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
+    let assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
     if (!assetPrice) {
-      throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
+      assetPrice = 0;
+      //throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
     }
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveOpened', {
@@ -144,9 +149,10 @@ BorrowerOperationsContractProcessor.bind({
     await ctx.store.upsert(userTrove);
   })
   .onLogCloseTroveEvent(async (log, ctx) => {
-    const assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
+    let assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
     if (!assetPrice) {
-      throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
+      assetPrice = 0;
+      //throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
     }
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveClosed', {
@@ -166,9 +172,10 @@ BorrowerOperationsContractProcessor.bind({
     }
   })
   .onLogAdjustTroveEvent(async (log, ctx) => {
-    const assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
+    let assetPrice = await getPriceBySymbol(assets[log.data.asset_id.bits], ctx.timestamp);
     if (!assetPrice) {
-      throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
+      assetPrice = 0;
+      //throw new Error(`No price found for ${String(log.data.asset_id.bits)} at ${ctx.timestamp}`);
     }
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveAdjusted', {
@@ -252,13 +259,20 @@ BorrowerOperationsContractProcessor.bind({
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
         total_debt: BigDecimal(0)
+      },
+      '0x1d5d97005e41cae2187a895fd8eab0506111e0e2f3331cd3912c15c24e3c1d82': {
+        symbol: 'FUEL',
+        total_collateral: BigDecimal(0),
+        total_collateral_USD: BigDecimal(0),
+        total_debt: BigDecimal(0)
       }
     };
 
     for (const userTrove of userTroves as UserTrove[]) {
-      const assetPrice = await getPriceBySymbol(assets[userTrove.assetId], ctx.timestamp);
+      let assetPrice = await getPriceBySymbol(assets[userTrove.assetId], ctx.timestamp);
       if (!assetPrice) {
-        throw new Error(`No price found for ${String(userTrove.assetId)} at ${ctx.timestamp}`);
+        assetPrice = 0;
+        // throw new Error(`No price found for ${String(userTrove.assetId)} at ${ctx.timestamp}`);
       }
       const newPositionSnapshotCollateralId = `${userTrove.address}_${userTrove.assetId}_${START_TIME_FORMATED}_collateral`;
       const newPositionSnapshotCollateral = new PositionSnapshot({
@@ -304,9 +318,10 @@ BorrowerOperationsContractProcessor.bind({
     }
 
     for (const troveData in totalTroveData) {
-      const assetPrice = await getPriceBySymbol(assets[troveData], ctx.timestamp);
+      let assetPrice = await getPriceBySymbol(assets[troveData], ctx.timestamp);
       if (!assetPrice) {
-        throw new Error(`No price found for ${String(assets[troveData])} at ${ctx.timestamp}`);
+        assetPrice = 0;
+        // throw new Error(`No price found for ${String(assets[troveData])} at ${ctx.timestamp}`);
       }
       const newPoolSnapshotCollateralId = `${troveData}_${START_TIME_FORMATED}_collateral`;
       const newPoolSnapshotCollateral = new PoolSnapshot({
