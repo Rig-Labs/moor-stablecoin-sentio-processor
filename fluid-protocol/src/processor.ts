@@ -60,8 +60,13 @@ for (const troveManagerAsset in troveManagers) {
       userTrove.total_collateral = userTrove.total_collateral.minus(BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL));
       userTrove.total_collateral_USD = userTrove.total_collateral_USD.minus(BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice)));
       userTrove.total_debt = userTrove.total_debt.minus(BigDecimal(String(log.data.usdf_amount)).div(ASSET_DECIMALS_BIGDECIMAL));
+      // redemption fee is 1% of the collateral amount
+      userTrove.redemptionFeesUsd = userTrove.redemptionFeesUsd.plus(
+        BigDecimal(String(log.data.collateral_amount)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice)).times(BigDecimal(0.01))
+      );
       await ctx.store.upsert(userTrove);
     }
+
   }).onLogTroveFullLiquidationEvent(async (log, ctx) => {
     let timestamp = ctx.block?.time
     ctx.eventLogger.emit('troveFullyLiquidated', {
@@ -74,9 +79,12 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
+      const initialCollateralUSD = userTrove.total_collateral_USD;
       userTrove.total_collateral = BigDecimal(String(0));
       userTrove.total_collateral_USD = BigDecimal(String(0));
       userTrove.total_debt = BigDecimal(String(0));
+      // liquidation fee is 10% of the collateral amount, here it is the full collateral amount before the liquidation
+      userTrove.liquidationFeesUsd = userTrove.liquidationFeesUsd.plus(initialCollateralUSD.times(BigDecimal(0.1)))
       await ctx.store.upsert(userTrove);
     }
   }).onLogTrovePartialLiquidationEvent(async (log, ctx) => {
@@ -96,9 +104,14 @@ for (const troveManagerAsset in troveManagers) {
     const userTroveId = `${String(log.data.borrower.Address?.bits)}_${String(troveManagerAsset)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
+      const initialCollateralUSD = userTrove.total_collateral_USD;
       userTrove.total_collateral = BigDecimal(String(log.data.remaining_collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.remaining_collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
       userTrove.total_debt = BigDecimal(String(log.data.remaining_debt)).div(ASSET_DECIMALS_BIGDECIMAL);
+      // liquidation fee is 10% of the collateral amount, for partial liquidation here it is the initial collateral - remaining collateral to get the change in collateral
+      userTrove.liquidationFeesUsd = userTrove.liquidationFeesUsd.plus(
+        (initialCollateralUSD.minus(userTrove.total_collateral_USD)).times(BigDecimal(0.1))
+      )
       await ctx.store.upsert(userTrove);
     }
   })
@@ -136,6 +149,7 @@ BorrowerOperationsContractProcessor.bind({
       timestamp: String(timestamp)
     })
     const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
+    // 0.5% borrow fee on USDF
     const userTrove = new UserTrove({
       id: userTroveId,
       address: String(log.data.user.Address?.bits),
@@ -143,7 +157,10 @@ BorrowerOperationsContractProcessor.bind({
       timestamp: dayjs(ctx.timestamp.getTime()).utc().unix(),
       total_collateral: BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL),
       total_collateral_USD: BigDecimal(String(log.data.collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice)),
-      total_debt: BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL)
+      total_debt: BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL),
+      liquidationFeesUsd: BigDecimal(0),
+      redemptionFeesUsd: BigDecimal(0),
+      borrowFeesUsd: BigDecimal(String(log.data.debt)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(0.005))
     });
 
     await ctx.store.upsert(userTrove);
@@ -191,9 +208,16 @@ BorrowerOperationsContractProcessor.bind({
     const userTroveId = `${String(log.data.user.Address?.bits)}_${String(log.data.asset_id.bits)}`;
     let userTrove = await ctx.store.get(UserTrove, userTroveId) as UserTrove;
     if (userTrove) {
+      const initialDebt = userTrove.total_debt;
       userTrove.total_collateral = BigDecimal(String(log.data.total_collateral)).div(ASSET_DECIMALS_BIGDECIMAL);
       userTrove.total_collateral_USD = BigDecimal(String(log.data.total_collateral)).div(ASSET_DECIMALS_BIGDECIMAL).times(BigDecimal(assetPrice));
       userTrove.total_debt = BigDecimal(String(log.data.total_debt)).div(ASSET_DECIMALS_BIGDECIMAL);
+      // borrow fee if more USDF is borrowed
+      if (initialDebt < userTrove.total_debt) {
+        userTrove.borrowFeesUsd = userTrove.borrowFeesUsd.plus(
+          (userTrove.total_debt.minus(initialDebt)).times(BigDecimal(0.005))
+        )
+      }
       await ctx.store.upsert(userTrove);
     }
   }).onTimeInterval(async (_, ctx) => {
@@ -228,43 +252,64 @@ BorrowerOperationsContractProcessor.bind({
         symbol: 'METH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0xbae80f7fb8aa6b90d9b01ef726ec847cc4f59419c4d5f2ea88fec785d1b0e849': {
         symbol: 'RSETH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0x239ed6e12b7ce4089ee245244e3bf906999a6429c2a9a445a1e1faf56914a4ab': {
         symbol: 'WEETH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0x91b3559edb2619cde8ffb2aa7b3c3be97efd794ea46700db7092abeee62281b0': {
         symbol: 'EZETH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0x1a7815cc9f75db5c24a5b0814bfb706bb9fe485333e98254015de8f48f84c67b': {
         symbol: 'WSTETH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07': {
         symbol: 'ETH',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       },
       '0x1d5d97005e41cae2187a895fd8eab0506111e0e2f3331cd3912c15c24e3c1d82': {
         symbol: 'FUEL',
         total_collateral: BigDecimal(0),
         total_collateral_USD: BigDecimal(0),
-        total_debt: BigDecimal(0)
+        total_debt: BigDecimal(0),
+        borrowFeesUsd: BigDecimal(0),
+        liquidationFeesUsd: BigDecimal(0),
+        redemptionFeesUsd: BigDecimal(0)
       }
     };
 
@@ -312,6 +357,9 @@ BorrowerOperationsContractProcessor.bind({
       totalTroveData[userTrove.assetId].total_collateral = totalTroveData[userTrove.assetId].total_collateral.plus(userTrove.total_collateral);
       totalTroveData[userTrove.assetId].total_collateral_USD = totalTroveData[userTrove.assetId].total_collateral_USD.plus(BigDecimal(userTrove.total_collateral.toString()).times(BigDecimal(assetPrice)));
       totalTroveData[userTrove.assetId].total_debt = totalTroveData[userTrove.assetId].total_debt.plus(userTrove.total_debt);
+      totalTroveData[userTrove.assetId].borrowFeesUsd = totalTroveData[userTrove.assetId].borrowFeesUsd.plus(userTrove.borrowFeesUsd);
+      totalTroveData[userTrove.assetId].liquidationFeesUsd = totalTroveData[userTrove.assetId].liquidationFeesUsd.plus(userTrove.liquidationFeesUsd);
+      totalTroveData[userTrove.assetId].redemptionFeesUsd = totalTroveData[userTrove.assetId].redemptionFeesUsd.plus(userTrove.redemptionFeesUsd);
 
       await ctx.store.upsert(newPositionSnapshotCollateral);
       await ctx.store.upsert(newPositionSnapshotDebt);
@@ -346,9 +394,9 @@ BorrowerOperationsContractProcessor.bind({
         borrowed_amount: BigDecimal(0),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
-        totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
-        userFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
-        protocolFeesUsd: BigDecimal(0) // for the purpose of fuel points program we don't need to index this
+        totalFeesUsd: totalTroveData[troveData].liquidationFeesUsd.plus(totalTroveData[troveData].redemptionFeesUsd),
+        userFeesUsd: totalTroveData[troveData].liquidationFeesUsd.plus(totalTroveData[troveData].redemptionFeesUsd),
+        protocolFeesUsd: BigDecimal(0)
       })
       const newPoolSnapshotDebtId = `${troveData}_${START_TIME_FORMATED}_debt`;
       const newPoolSnapshotDebt = new PoolSnapshot({
@@ -373,9 +421,9 @@ BorrowerOperationsContractProcessor.bind({
         borrowed_amount: BigDecimal(totalTroveData[troveData].total_debt),
         borrowIndex: BigDecimal(0), //?
         borrowApr: BigDecimal(0), //no APR, fixed fee model
-        totalFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
-        userFeesUsd: BigDecimal(0), // for the purpose of fuel points program we don't need to index this
-        protocolFeesUsd: BigDecimal(0) // for the purpose of fuel points program we don't need to index this
+        totalFeesUsd: totalTroveData[troveData].borrowFeesUsd,
+        userFeesUsd: totalTroveData[troveData].borrowFeesUsd,
+        protocolFeesUsd: BigDecimal(0)
       })
       await ctx.store.upsert(newPoolSnapshotCollateral);
       await ctx.store.upsert(newPoolSnapshotDebt);

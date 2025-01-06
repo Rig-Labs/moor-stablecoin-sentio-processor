@@ -11,7 +11,11 @@ type UserTrove @entity {
     total_collateral: BigDecimal!
     total_collateral_USD: BigDecimal!
     total_debt: BigDecimal!
+    liquidationFeesUsd: BigDecimal!
+    redemptionFeesUsd: BigDecimal!
+    borrowFeesUsd: BigDecimal!
 }
+
 # pool
 type Pool @entity {
     id: ID!

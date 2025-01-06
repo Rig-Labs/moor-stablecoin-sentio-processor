@@ -42,6 +42,18 @@ export class UserTrove extends AbstractEntity  {
 	@Required
 	@Column("BigDecimal")
 	total_debt: BigDecimal
+
+	@Required
+	@Column("BigDecimal")
+	liquidationFeesUsd: BigDecimal
+
+	@Required
+	@Column("BigDecimal")
+	redemptionFeesUsd: BigDecimal
+
+	@Required
+	@Column("BigDecimal")
+	borrowFeesUsd: BigDecimal
   constructor(data: Partial<UserTrove>) {super()}
 }
 
@@ -257,7 +269,11 @@ type UserTrove @entity {
     total_collateral: BigDecimal!
     total_collateral_USD: BigDecimal!
     total_debt: BigDecimal!
+    liquidationFeesUsd: BigDecimal!
+    redemptionFeesUsd: BigDecimal!
+    borrowFeesUsd: BigDecimal!
 }
+
 # pool
 type Pool @entity {
     id: ID!
