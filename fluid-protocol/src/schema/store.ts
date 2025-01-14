@@ -12,6 +12,19 @@ import { DatabaseSchema } from '@sentio/sdk'
 
 
 
+
+interface UserTroveConstructorInput {
+  id: ID;
+  address: String;
+  assetId: String;
+  timestamp: Int;
+  total_collateral: BigDecimal;
+  total_collateral_USD: BigDecimal;
+  total_debt: BigDecimal;
+  liquidationFeesUsd: BigDecimal;
+  redemptionFeesUsd: BigDecimal;
+  borrowFeesUsd: BigDecimal;
+}
 @Entity("UserTrove")
 export class UserTrove extends AbstractEntity  {
 
@@ -54,9 +67,22 @@ export class UserTrove extends AbstractEntity  {
 	@Required
 	@Column("BigDecimal")
 	borrowFeesUsd: BigDecimal
-  constructor(data: Partial<UserTrove>) {super()}
+  constructor(data: UserTroveConstructorInput) {super()}
 }
 
+
+interface PoolConstructorInput {
+  id: ID;
+  timestamp: Int;
+  creation_block_number: Int;
+  chainId: Int;
+  underlying_token_address: String;
+  underlying_token_symbol: String;
+  receipt_token_address: String;
+  receipt_token_symbol: String;
+  pool_address: String;
+  pool_type: String;
+}
 @Entity("Pool")
 export class Pool extends AbstractEntity  {
 
@@ -99,9 +125,26 @@ export class Pool extends AbstractEntity  {
 	@Required
 	@Column("String")
 	pool_type: String
-  constructor(data: Partial<Pool>) {super()}
+  constructor(data: PoolConstructorInput) {super()}
 }
 
+
+interface PositionSnapshotConstructorInput {
+  id: ID;
+  timestamp: Int;
+  blockDate: String;
+  chainId: Int;
+  poolAddress: String;
+  underlyingTokenAddress: String;
+  underlyingTokenSymbol: String;
+  userAddress: String;
+  suppliedAmount: BigDecimal;
+  suppliedAmountUsd?: BigDecimal;
+  borrowed_amount: BigDecimal;
+  borrowed_amount_usd: BigDecimal;
+  collateralAmount: BigDecimal;
+  collateralAmountUsd?: BigDecimal;
+}
 @Entity("PositionSnapshot")
 export class PositionSnapshot extends AbstractEntity  {
 
@@ -158,9 +201,36 @@ export class PositionSnapshot extends AbstractEntity  {
 
 	@Column("BigDecimal")
 	collateralAmountUsd?: BigDecimal
-  constructor(data: Partial<PositionSnapshot>) {super()}
+  constructor(data: PositionSnapshotConstructorInput) {super()}
 }
 
+
+interface PoolSnapshotConstructorInput {
+  id: ID;
+  timestamp: Int;
+  blockDate: String;
+  chainId: Int;
+  poolAddress: String;
+  underlyingTokenAddress: String;
+  underlyingTokenSymbol: String;
+  underlyingTokenPriceUsd?: BigDecimal;
+  availableAmount: BigDecimal;
+  availableAmountUsd?: BigDecimal;
+  suppliedAmount: BigDecimal;
+  suppliedAmountUsd?: BigDecimal;
+  collateralAmount: BigDecimal;
+  collateralAmountUsd?: BigDecimal;
+  collateralFactor: BigDecimal;
+  supplyIndex: BigDecimal;
+  supplyApr: BigDecimal;
+  borrowed_amount: BigDecimal;
+  borrowed_amount_usd: BigDecimal;
+  borrowIndex: BigDecimal;
+  borrowApr: BigDecimal;
+  totalFeesUsd?: BigDecimal;
+  userFeesUsd?: BigDecimal;
+  protocolFeesUsd?: BigDecimal;
+}
 @Entity("PoolSnapshot")
 export class PoolSnapshot extends AbstractEntity  {
 
@@ -252,7 +322,7 @@ export class PoolSnapshot extends AbstractEntity  {
 
 	@Column("BigDecimal")
 	protocolFeesUsd?: BigDecimal
-  constructor(data: Partial<PoolSnapshot>) {super()}
+  constructor(data: PoolSnapshotConstructorInput) {super()}
 }
 
 

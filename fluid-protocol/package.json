@@ -11,7 +11,7 @@
     "postinstall": "sentio gen"
   },
   "dependencies": {
-    "@sentio/sdk": "^2.49.0",
+    "@sentio/sdk": "^2.54.1",
     "dayjs": "^1.11.13"
   },
   "devDependencies": {
