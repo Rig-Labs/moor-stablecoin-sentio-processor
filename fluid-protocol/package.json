@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "fluid-protocol",
+  "name": "moor-protocol",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
